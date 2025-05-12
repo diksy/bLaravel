@@ -6,6 +6,8 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -15,7 +17,7 @@ class UserController extends Controller
     public function index()
     {
         return Inertia::render('users/page', [
-            'data' => User::orderBy('id', 'desc')->get(),
+            'data' => User::all(),
         ]);
     }
 
@@ -24,7 +26,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('users/form', [
+            'user' => new User(),
+        ]);
     }
 
     /**
@@ -32,7 +36,19 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-        //
+        $user = new User();
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        $user->password = Hash::make($request->input('password'));
+        $user->email_verified_at = $request->has('email_verified_at') ? now() : null;
+        try {
+            $user->save();
+        } catch (\Throwable $th) {
+            throw ValidationException::withMessages([
+                'message' => 'Something wrong. Please contact administrator for more information.',
+            ]);
+        }
+        return to_route('users.index');
     }
 
     /**
@@ -48,7 +64,9 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        //
+        return Inertia::render('users/form', [
+            'user' => $user,
+        ]);
     }
 
     /**
@@ -56,7 +74,26 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        //
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        if ($request->has('password')) {
+            $user->password = Hash::make($request->input('password'));
+        }
+        if ($request->has('email_verified_at') && strlen(trim($request->input('email_verified_at'))) > 0) {
+            if ($user->email_verified_at == null) {
+                $user->email_verified_at = now();
+            }
+        } else {
+            $user->email_verified_at = null;
+        }
+        try {
+            $user->save();
+        } catch (\Throwable $th) {
+            throw ValidationException::withMessages([
+                'message' => 'Something wrong. Please contact administrator for more information.',
+            ]);
+        }
+        return to_route('users.index');
     }
 
     /**
@@ -64,6 +101,16 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //
+        throw ValidationException::withMessages([
+            'message' => 'Something wrong. Please contact administrator for more information.',
+        ]);
+        try {
+            $user->delete();
+        } catch (\Throwable $th) {
+            throw ValidationException::withMessages([
+                'message' => 'Something wrong. Please contact administrator for more information.',
+            ]);
+        }
+        return to_route('users.index');
     }
 }

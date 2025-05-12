@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { DataTableColumnHeader } from "@/components/data-table-header"
+import { Link, useForm } from "@inertiajs/react"
+import { FormEventHandler } from "react"
 
 export type User = {
   id: number
@@ -62,6 +64,15 @@ export const columns: ColumnDef<User>[] = [
     id: "actions",
     cell: ({ row }) => {
       const user = row.original
+      const { delete: destroy } = useForm<Required<User>>(user);
+      const removeUser: FormEventHandler = (e) => {
+        e.preventDefault();
+        destroy(route("users.destroy", user), {
+          preserveScroll: true,
+          onBefore: () => confirm("Are you sure want to remove user " + user.name + "?"),
+          onError: (errors) => alert(errors.message),
+        });
+      }
  
       return (
         <DropdownMenu>
@@ -74,8 +85,10 @@ export const columns: ColumnDef<User>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id.toString())}>Remove</DropdownMenuItem>
+            <Link href={"/users/" + user.id + "/edit"}>
+              <DropdownMenuItem>Edit</DropdownMenuItem>
+            </Link>
+            <DropdownMenuItem onClick={removeUser}>Remove</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
