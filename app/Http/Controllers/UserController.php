@@ -15,7 +15,7 @@ class UserController extends Controller
     public function index()
     {
         return Inertia::render('users/page', [
-            'data' => User::all(),
+            'data' => User::orderBy('id', 'desc')->get(),
         ]);
     }
 
@@ -64,6 +64,10 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //
+        try {
+            $user->delete();
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }
