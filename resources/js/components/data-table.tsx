@@ -6,6 +6,7 @@ import {
   SortingState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -20,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+import { Input } from "@/components/ui/input"
 import { DataTablePagination } from "./data-table-pagination"
 
 interface DataTableProps<TData, TValue> {
@@ -27,11 +29,16 @@ interface DataTableProps<TData, TValue> {
   data: TData[]
 }
 
+interface GlobalFilter {
+  globalFilter: any
+}
+
 export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
+  const [globalFilter, setGlobalFilter] = React.useState<any>([])
  
   const table = useReactTable({
     data,
@@ -40,13 +47,26 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
+    onGlobalFilterChange: setGlobalFilter,
+    getFilteredRowModel: getFilteredRowModel(),
+    globalFilterFn: 'includesString',
     state: {
       sorting,
+      globalFilter,
     },
   })
 
   return (
     <div>
+      <div className="flex items-center py-2">
+        <Input
+          placeholder="Search..."
+          onChange={(event) =>
+            table.setGlobalFilter(String(event.target.value))
+          }
+          className="max-w-sm"
+        />
+      </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
