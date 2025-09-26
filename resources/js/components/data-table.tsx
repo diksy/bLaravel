@@ -36,7 +36,8 @@ interface GlobalFilter {
 export function DataTable<TData, TValue>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+  menus,
+}: DataTableProps<TData, TValue> & { menus?: any }) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = React.useState<any>([])
  
@@ -66,6 +67,9 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-sm"
         />
+        {menus && (
+          <div className="ms-auto">{menus}</div>
+        )}
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
